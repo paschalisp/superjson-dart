@@ -152,6 +152,27 @@ extension JsonExtensions on Json {
     return orElse;
   }
 
+  /// Returns the DateTime value from a Google protobuf Timestamp format for the specified [key], or [orElse] if not found or invalid.
+  DateTime getTimestamp(String key, {required DateTime orElse}) => getTimestampOrNull(key, orElse: orElse) as DateTime;
+
+  /// Returns the DateTime value from a Google protobuf Timestamp format for the specified [key], or [orElse] if not found or invalid.
+  /// Expects a Json object with 'seconds' and 'nanos' fields.
+  DateTime? getTimestampOrNull(String key, {DateTime? orElse}) {
+    if (containsKey(key)) {
+      if (this[key] is Json) {
+        try {
+          return DateTime.fromMillisecondsSinceEpoch(
+            this[key]['seconds'].toInt() * 1000 + (this[key]['nanos'] ~/ 1000000),
+            isUtc: true,
+          ).toLocal();
+        } catch (_) {}
+      }
+    }
+
+    return orElse;
+  }
+
+  /// Returns a typed list for the specified [key], or [orElse] if not found or not a list.
   List<T> getList<T>(String key, {required List<T> orElse}) => getListOrNull(key, orElse: orElse) as List<T>;
 
   /// Returns a typed list for the specified [key], or [orElse] if not found or not a list.
@@ -250,6 +271,15 @@ extension JsonExtensions on Json {
 extension DateJsonExtensions on DateTime {
   /// Returns the DateTime as an ISO 8601 string in UTC format.
   String get asJsonFormat => toUtc().toIso8601String();
+
+  /// Returns the DateTime as a date-only string in ISO 8601 format (YYYY-MM-DD).
+  String get asJsonDateOnlyFormat => toIso8601String().substring(0, 10);
+
+  /// Converts the date/time in Google's protobuf Timestamp compatible format.
+  Json get asJsonTimestamp => {
+    'seconds': millisecondsSinceEpoch ~/ 1000,
+    'nanos': (millisecondsSinceEpoch % 1000) * 1000000,
+  };
 }
 
 extension DurationJsonExtensions on Duration {

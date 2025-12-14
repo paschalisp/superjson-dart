@@ -382,6 +382,252 @@ void main() {
     });
   });
 
+  group('getTimestamp tests', () {
+    final defaultDate = DateTime(2000, 1, 1);
+    final now = DateTime.now();
+    final seconds = now.millisecondsSinceEpoch ~/ 1000;
+    final nanos = (now.millisecondsSinceEpoch % 1000) * 1000000;
+
+    test('parses protobuf Timestamp format with seconds and nanos', () {
+      final json = {
+        'created': {'seconds': seconds, 'nanos': nanos},
+      };
+      final result = json.getTimestamp('created', orElse: defaultDate);
+      expect(result.millisecondsSinceEpoch, now.millisecondsSinceEpoch);
+    });
+
+    test('parses protobuf Timestamp format with zero nanos', () {
+      final json = {
+        'created': {'seconds': seconds, 'nanos': 0},
+      };
+      final result = json.getTimestamp('created', orElse: defaultDate);
+      expect(result.millisecondsSinceEpoch, seconds * 1000);
+    });
+
+    test('parses protobuf Timestamp format with maximum nanos', () {
+      final json = {
+        'created': {'seconds': seconds, 'nanos': 999999999},
+      };
+      final result = json.getTimestamp('created', orElse: defaultDate);
+      expect(result.millisecondsSinceEpoch, seconds * 1000 + 999);
+    });
+
+    test('converts UTC timestamp to local time', () {
+      final json = {
+        'created': {'seconds': seconds, 'nanos': 0},
+      };
+      final result = json.getTimestamp('created', orElse: defaultDate);
+      expect(result.isUtc, false);
+    });
+
+    test('returns default when key does not exist', () {
+      final json = <String, dynamic>{};
+      expect(json.getTimestamp('missing', orElse: defaultDate), defaultDate);
+    });
+
+    test('returns default for invalid timestamp format (missing seconds)', () {
+      final json = {
+        'invalid': {'nanos': 500000000},
+      };
+      expect(json.getTimestamp('invalid', orElse: defaultDate), defaultDate);
+    });
+
+    test('returns default for invalid timestamp format (missing nanos)', () {
+      final json = {
+        'invalid': {'seconds': 1705320600},
+      };
+      expect(json.getTimestamp('invalid', orElse: defaultDate), defaultDate);
+    });
+
+    test('returns default for non-map value', () {
+      final json = {'invalid': 'not a timestamp'};
+      expect(json.getTimestamp('invalid', orElse: defaultDate), defaultDate);
+    });
+
+    test('returns default for null value', () {
+      final json = {'key': null};
+      expect(json.getTimestamp('key', orElse: defaultDate), defaultDate);
+    });
+
+    test('handles timestamp with negative seconds (before epoch)', () {
+      final secs = seconds - 1000;
+      final json = {
+        'created': {'seconds': secs, 'nanos': 0},
+      };
+      final result = json.getTimestamp('created', orElse: defaultDate);
+      expect(result.millisecondsSinceEpoch, secs * 1000);
+    });
+
+    test('handles timestamp with very large seconds value', () {
+      final secs = seconds + 9999999999;
+      final json = {
+        'created': {'seconds': secs, 'nanos': 0},
+      };
+      final result = json.getTimestamp('created', orElse: defaultDate);
+      expect(result.millisecondsSinceEpoch, secs * 1000);
+    });
+
+    test('returns default for malformed timestamp structure', () {
+      final json = {
+        'invalid': {'sec': 1705320600, 'nano': 0},
+      };
+      expect(json.getTimestamp('invalid', orElse: defaultDate), defaultDate);
+    });
+
+    test('returns default for timestamp with non-numeric seconds', () {
+      final json = {
+        'invalid': {'seconds': 'abc', 'nanos': 0},
+      };
+      expect(json.getTimestamp('invalid', orElse: defaultDate), defaultDate);
+    });
+
+    test('returns default for timestamp with non-numeric nanos', () {
+      final json = {
+        'invalid': {'seconds': 1705320600, 'nanos': 'abc'},
+      };
+      expect(json.getTimestamp('invalid', orElse: defaultDate), defaultDate);
+    });
+
+    test('handles timestamp with double seconds value', () {
+      final secs = seconds.toDouble() + 0.5;
+      final json = {
+        'created': {'seconds': secs, 'nanos': 0},
+      };
+      final result = json.getTimestamp('created', orElse: defaultDate);
+      expect(result.millisecondsSinceEpoch, secs.toInt() * 1000);
+    });
+
+    test('handles timestamp with double nanos value', () {
+      final json = {
+        'created': {'seconds': seconds, 'nanos': 500000000.5},
+      };
+      final result = json.getTimestamp('created', orElse: defaultDate);
+      expect(result.millisecondsSinceEpoch, seconds * 1000 + 500);
+    });
+  });
+
+  group('getTimestampOrNull tests', () {
+    final now = DateTime.now();
+    final seconds = now.millisecondsSinceEpoch ~/ 1000;
+    final nanos = (now.millisecondsSinceEpoch % 1000) * 1000000;
+
+    test('parses protobuf Timestamp format with seconds and nanos', () {
+      final json = {
+        'timestamp': {'seconds': seconds, 'nanos': nanos},
+      };
+      final result = json.getTimestampOrNull('timestamp');
+      expect(result, isNotNull);
+      expect(result!.millisecondsSinceEpoch, now.millisecondsSinceEpoch);
+    });
+
+    test('parses protobuf Timestamp format with zero nanos', () {
+      final json = {
+        'timestamp': {'seconds': seconds, 'nanos': 0},
+      };
+      final result = json.getTimestampOrNull('timestamp');
+      expect(result, isNotNull);
+      expect(result!.millisecondsSinceEpoch, seconds * 1000);
+    });
+
+    test('returns null when key does not exist', () {
+      final json = <String, dynamic>{};
+      expect(json.getTimestampOrNull('missing'), null);
+    });
+
+    test('returns custom default when key does not exist', () {
+      final defaultDate = DateTime(2020, 5, 10);
+      final json = <String, dynamic>{};
+      expect(json.getTimestampOrNull('missing', orElse: defaultDate), defaultDate);
+    });
+
+    test('returns null for invalid timestamp format', () {
+      final json = {
+        'invalid': {'sec': 1705320600},
+      };
+      expect(json.getTimestampOrNull('invalid'), null);
+    });
+
+    test('returns null for non-map value', () {
+      final json = {'invalid': 12345};
+      expect(json.getTimestampOrNull('invalid'), null);
+    });
+
+    test('handles null values', () {
+      final json = {'key': null};
+      expect(json.getTimestampOrNull('key'), null);
+    });
+
+    test('converts UTC timestamp to local time', () {
+      final json = {
+        'timestamp': {'seconds': seconds, 'nanos': 0},
+      };
+      final result = json.getTimestampOrNull('timestamp');
+      expect(result, isNotNull);
+      expect(result!.isUtc, false);
+    });
+
+    test('handles timestamp with negative seconds', () {
+      final secs = seconds - 5000;
+      final json = {
+        'timestamp': {'seconds': secs, 'nanos': 0},
+      };
+      final result = json.getTimestampOrNull('timestamp');
+      expect(result, isNotNull);
+      expect(result!.millisecondsSinceEpoch, secs * 1000);
+    });
+
+    test('handles timestamp with maximum nanos value', () {
+      final json = {
+        'timestamp': {'seconds': seconds, 'nanos': 999999999},
+      };
+      final result = json.getTimestampOrNull('timestamp');
+      expect(result, isNotNull);
+      expect(result!.millisecondsSinceEpoch, seconds * 1000 + 999);
+    });
+
+    test('returns null for timestamp with only seconds field', () {
+      final json = {
+        'invalid': {'seconds': 1705320600},
+      };
+      expect(json.getTimestampOrNull('invalid'), null);
+    });
+
+    test('returns null for timestamp with only nanos field', () {
+      final json = {
+        'invalid': {'nanos': 500000000},
+      };
+      expect(json.getTimestampOrNull('invalid'), null);
+    });
+
+    test('returns null for timestamp with non-numeric values', () {
+      final json = {
+        'invalid': {'seconds': 'text', 'nanos': 'text'},
+      };
+      expect(json.getTimestampOrNull('invalid'), null);
+    });
+
+    test('handles timestamp with double precision values', () {
+      final secs = seconds.toDouble() + 0.999;
+      final json = {
+        'timestamp': {'seconds': secs, 'nanos': 500000000.999},
+      };
+      final result = json.getTimestampOrNull('timestamp');
+      expect(result, isNotNull);
+      expect(result!.millisecondsSinceEpoch, secs.toInt() * 1000 + 500);
+    });
+
+    test('returns null for empty map value', () {
+      final json = {'empty': <String, dynamic>{}};
+      expect(json.getTimestampOrNull('empty'), null);
+    });
+
+    test('returns custom default for invalid format', () {
+      final defaultDate = DateTime(2025, 1, 1);
+      final json = {'invalid': 'string'};
+      expect(json.getTimestampOrNull('invalid', orElse: defaultDate), defaultDate);
+    });
+  });
+
   group('getDuration tests', () {
     test('creates duration from milliseconds', () {
       final json = {'timeout': 5000};
