@@ -1,0 +1,11 @@
+# Pub dependencies
+.pub/
+.packages
+build/
+*.lock
+
+# Generated files
+.dart_tool/
+
+# IDE configs
+.idea
