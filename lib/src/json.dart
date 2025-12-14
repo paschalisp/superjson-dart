@@ -9,12 +9,17 @@ mixin Jsonizable {
 }
 
 extension JsonExtensions on Json {
+  /// Returns the map entry for the specified [key].
+  /// If not found, calls [orElse] if provided, otherwise throws.
   MapEntry<String, dynamic> getByKey(String key, {MapEntry<String, dynamic> Function()? orElse}) {
     return entries.firstWhere((element) => element.key == key, orElse: orElse);
   }
 
+  /// Returns the string value for the specified [key], or [orElse] if not found or not convertible.
   String getString(String key, {required String orElse}) => getStringOrNull(key, orElse: orElse) as String;
 
+  /// Returns the string value for the specified [key], or [orElse] if not found or not convertible.
+  /// Attempts to convert numbers and booleans to strings.
   String? getStringOrNull(String key, {String? orElse}) {
     if (!containsKey(key)) return orElse;
 
@@ -26,9 +31,13 @@ extension JsonExtensions on Json {
     };
   }
 
+  /// Returns the integer value for the specified [key], or [orElse] if not found or not convertible.
+  /// Optionally applies [roundFn] to convert numeric values.
   int getInt(String key, {required int orElse, Function(num)? roundFn}) =>
       getIntOrNull(key, orElse: orElse, roundFn: roundFn) as int;
 
+  /// Returns the integer value for the specified [key], or [orElse] if not found or not convertible.
+  /// Attempts to parse strings and optionally applies [roundFn] to convert numeric values.
   int? getIntOrNull(String key, {int? orElse, Function(num)? roundFn}) {
     if (!containsKey(key)) return orElse;
 
@@ -40,8 +49,11 @@ extension JsonExtensions on Json {
     };
   }
 
+  /// Returns the double value for the specified [key], or [orElse] if not found or not convertible.
   double getDouble(String key, {required double orElse}) => getDoubleOrNull(key, orElse: orElse) as double;
 
+  /// Returns the double value for the specified [key], or [orElse] if not found or not convertible.
+  /// Attempts to parse strings and convert numeric values.
   double? getDoubleOrNull(String key, {double? orElse}) => containsKey(key)
       ? switch (this[key]) {
           double _ => this[key],
@@ -51,9 +63,14 @@ extension JsonExtensions on Json {
         }
       : orElse;
 
+  /// Returns the boolean value for the specified [key], or [orElse] if not found or not convertible.
+  /// When [strict] is true, only accepts 'true' and 'false' strings; otherwise accepts '1', '0', 'yes', 'no'.
   bool getBool(String key, {required bool orElse, bool strict = false}) =>
       getBoolOrNull(key, orElse: orElse, strict: strict) as bool;
 
+  /// Returns the boolean value for the specified [key], or [orElse] if not found or not convertible.
+  /// When [strict] is true, only accepts 'true' and 'false' strings; otherwise accepts '1', '0', 'yes', 'no'.
+  /// Also converts integers 1 and 0 to true and false respectively.
   bool? getBoolOrNull(String key, {bool? orElse, bool strict = true}) => containsKey(key)
       ? switch (this[key]) {
           bool _ => this[key],
@@ -79,7 +96,11 @@ extension JsonExtensions on Json {
         }
       : orElse;
 
+  /// Returns the duration value for the specified [key], or [orElse] if not found or not convertible.
   Duration getDuration(String key, {required Duration orElse}) => getDurationOrNull(key, orElse: orElse) as Duration;
+
+  /// Returns the duration value for the specified [key], or [orElse] if not found or not convertible.
+  /// Interprets integer values as milliseconds.
   Duration? getDurationOrNull(String key, {Duration? orElse}) => containsKey(key)
       ? switch (this[key]) {
           int _ => Duration(milliseconds: this[key]),
@@ -88,6 +109,8 @@ extension JsonExtensions on Json {
         }
       : orElse;
 
+  /// Merges the provided [json] into this Json object, overwriting existing keys.
+  /// Returns this Json object for method chaining.
   Json applyJson(Json json) {
     for (var key in json.keys) {
       this[key] = json[key];
@@ -96,8 +119,11 @@ extension JsonExtensions on Json {
     return this;
   }
 
+  /// Returns the DateTime value for the specified [key], or [orElse] if not found or not parseable.
   DateTime getDateTime(String key, {required DateTime orElse}) => getDateTimeOrNull(key, orElse: orElse) as DateTime;
 
+  /// Returns the DateTime value for the specified [key], or [orElse] if not found or not parseable.
+  /// Attempts multiple date formats including ISO 8601 and common JSON date formats.
   DateTime? getDateTimeOrNull(String key, {DateTime? orElse}) {
     if (containsKey(key)) {
       if (this[key] is DateTime) return this[key];
@@ -128,6 +154,8 @@ extension JsonExtensions on Json {
 
   List<T> getList<T>(String key, {required List<T> orElse}) => getListOrNull(key, orElse: orElse) as List<T>;
 
+  /// Returns a typed list for the specified [key], or [orElse] if not found or not a list.
+  /// Filters elements to only include those matching type [T].
   List<T>? getListOrNull<T>(String key, {List<T>? orElse}) {
     if (containsKey(key) && this[key] is Iterable) {
       return (this[key] as Iterable).whereType<T>().toList();
@@ -136,6 +164,7 @@ extension JsonExtensions on Json {
     return orElse;
   }
 
+  /// Returns a Json object for the specified [key], or [orElse] if not found or not a map.
   Json getJson(String key, {required Json orElse}) {
     if (containsKey(key) && this[key] is Map) {
       return Map<String, dynamic>.from(this[key]);
@@ -144,6 +173,7 @@ extension JsonExtensions on Json {
     return orElse;
   }
 
+  /// Returns a typed map for the specified [key], or [orElse] if not found or not a map.
   Map<T, V> getMap<T, V>(String key, {required Map<T, V> orElse}) {
     if (containsKey(key) && this[key] is Map) {
       return this[key];
@@ -200,7 +230,8 @@ extension JsonExtensions on Json {
     return j;
   }
 
-  /// Returns a subset of the Json structure containing only keys prefixed with the given value followed by a dot (.).
+  /// Returns a subset of the Json structure containing only keys prefixed with the given [prefix] followed by a dot (.).
+  /// The prefix is removed from the resulting keys.
   Json unflatten(String prefix) {
     Json j = {};
 
@@ -217,9 +248,11 @@ extension JsonExtensions on Json {
 }
 
 extension DateJsonExtensions on DateTime {
+  /// Returns the DateTime as an ISO 8601 string in UTC format.
   String get asJsonFormat => toUtc().toIso8601String();
 }
 
 extension DurationJsonExtensions on Duration {
+  /// Returns the duration as an integer representing milliseconds.
   int get asJson => inMilliseconds;
 }
