@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:superjson/json.dart';
+import 'package:superjson/superjson.dart';
 import 'package:test/test.dart';
 
 void main() {

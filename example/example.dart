@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_print
 
-import 'package:superjson/json.dart';
+import 'package:superjson/superjson.dart';
 
 void main() {
   // Sample JSON structure representing a user with various data types

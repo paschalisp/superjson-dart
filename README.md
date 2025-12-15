@@ -96,7 +96,7 @@ dependencies:
 Then import it in your Dart code:
 
 ```dart
-import 'package:superjson/json.dart';
+import 'package:superjson/superjson.dart';
 ```
 
 ## Usage

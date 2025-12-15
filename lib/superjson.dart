@@ -3,4 +3,4 @@
 /// More dartdocs go here.
 library aneya_json;
 
-export 'src/json.dart';
+export 'src/superjson.dart';
