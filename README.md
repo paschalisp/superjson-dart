@@ -90,7 +90,7 @@ Add `superjson` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  superjson: ^1.0.0
+  superjson: ^1.0.3
 ```
 
 Then import it in your Dart code:
@@ -104,8 +104,7 @@ import 'package:superjson/superjson.dart';
 ### Basic type-safe getters
 
 ```dart
-// or: Map<String, dynamic> data = {...}
-Json data = {
+final data = {
   'name': 'John Doe',
   'age': '25',  // String that can be parsed as int
   'score': 95.7,
@@ -126,7 +125,11 @@ bool flag = data.getBool('flag', orElse: true);           // false
 ### Nullable getters
 
 ```dart
-Json data = {'email': 'user@example.com'};
+final data = {'email': 'user@example.com'};
+// Equivalent to:
+// Json data = {'email': 'user@example.com'};
+// and:
+// Map<String, dynamic> data = {'email': 'user@example.com'};
 
 String? email = data.getStringOrNull('email');     // 'user@example.com'
 String? phone = data.getStringOrNull('phone');     // null
@@ -136,7 +139,7 @@ int? missing = data.getIntOrNull('missing', orElse: 100);  // 100 (custom defaul
 ### DateTime parsing
 
 ```dart
-Json data = {
+final data = {
   'created': '2024-01-15T10:30:00Z',
   'updated': 'Mon, 15 Jan 2024 10:30:00 GMT',
 };
@@ -148,7 +151,7 @@ DateTime? updated = data.getDateTimeOrNull('updated');
 ### Collections
 
 ```dart
-Json data = {
+final data = {
   'tags': ['dart', 'json', 'parser'],
   'metadata': {'version': '1.0', 'author': 'Example'},
 };
@@ -160,7 +163,7 @@ Json metadata = data.getJson('metadata', {});
 ### Flattening and unflattening
 
 ```dart
-Json nested = {
+final nested = {
   'user': {
     'name': 'John',
     'address': {
@@ -170,11 +173,11 @@ Json nested = {
 };
 
 // Flatten nested structure
-Json flat = nested.flattened;
+final flat = nested.flattened;
 // {'user.name': 'John', 'user.address.city': 'New York'}
 
 // Unflatten back to nested structure
-Json original = flat.unflattened;
+final original = flat.unflattened;
 // {'user': {'name': 'John', 'address': {'city': 'New York'}}}
 ```
 
@@ -205,6 +208,6 @@ Please file feature requests and bugs at the [issue tracker][tracker].
 
 ### License
 
-Licensed under the BSD-3-Clause License. See the LICENSE.txt file for details.
+Licensed under the BSD-3-Clause License.
 
 [tracker]: https://github.com/paschalisp/superjson-dart/issues/new

@@ -16,7 +16,7 @@ extension JsonExtensions on Json {
   }
 
   /// Returns the string value for the specified [key], or [orElse] if not found or not convertible.
-  String getString(String key, {required String orElse}) => getStringOrNull(key, orElse: orElse) as String;
+  String getString(String key, {String? orElse}) => getStringOrNull(key, orElse: orElse) ?? '';
 
   /// Returns the string value for the specified [key], or [orElse] if not found or not convertible.
   /// Attempts to convert numbers and booleans to strings.
@@ -33,8 +33,8 @@ extension JsonExtensions on Json {
 
   /// Returns the integer value for the specified [key], or [orElse] if not found or not convertible.
   /// Optionally applies [roundFn] to convert numeric values.
-  int getInt(String key, {required int orElse, Function(num)? roundFn}) =>
-      getIntOrNull(key, orElse: orElse, roundFn: roundFn) as int;
+  int getInt(String key, {int? orElse, Function(num)? roundFn}) =>
+      getIntOrNull(key, orElse: orElse, roundFn: roundFn) ?? 0;
 
   /// Returns the integer value for the specified [key], or [orElse] if not found or not convertible.
   /// Attempts to parse strings and optionally applies [roundFn] to convert numeric values.
@@ -50,7 +50,7 @@ extension JsonExtensions on Json {
   }
 
   /// Returns the double value for the specified [key], or [orElse] if not found or not convertible.
-  double getDouble(String key, {required double orElse}) => getDoubleOrNull(key, orElse: orElse) as double;
+  double getDouble(String key, {double? orElse}) => getDoubleOrNull(key, orElse: orElse) ?? 0.0;
 
   /// Returns the double value for the specified [key], or [orElse] if not found or not convertible.
   /// Attempts to parse strings and convert numeric values.
@@ -65,8 +65,8 @@ extension JsonExtensions on Json {
 
   /// Returns the boolean value for the specified [key], or [orElse] if not found or not convertible.
   /// When [strict] is true, only accepts 'true' and 'false' strings; otherwise accepts '1', '0', 'yes', 'no'.
-  bool getBool(String key, {required bool orElse, bool strict = false}) =>
-      getBoolOrNull(key, orElse: orElse, strict: strict) as bool;
+  bool getBool(String key, {bool? orElse, bool strict = false}) =>
+      getBoolOrNull(key, orElse: orElse, strict: strict) ?? false;
 
   /// Returns the boolean value for the specified [key], or [orElse] if not found or not convertible.
   /// When [strict] is true, only accepts 'true' and 'false' strings; otherwise accepts '1', '0', 'yes', 'no'.
@@ -97,7 +97,7 @@ extension JsonExtensions on Json {
       : orElse;
 
   /// Returns the duration value for the specified [key], or [orElse] if not found or not convertible.
-  Duration getDuration(String key, {required Duration orElse}) => getDurationOrNull(key, orElse: orElse) as Duration;
+  Duration getDuration(String key, {Duration? orElse}) => getDurationOrNull(key, orElse: orElse) ?? const Duration();
 
   /// Returns the duration value for the specified [key], or [orElse] if not found or not convertible.
   /// Interprets integer values as milliseconds.
@@ -120,7 +120,8 @@ extension JsonExtensions on Json {
   }
 
   /// Returns the DateTime value for the specified [key], or [orElse] if not found or not parseable.
-  DateTime getDateTime(String key, {required DateTime orElse}) => getDateTimeOrNull(key, orElse: orElse) as DateTime;
+  DateTime getDateTime(String key, {DateTime? orElse}) =>
+      getDateTimeOrNull(key, orElse: orElse) ?? DateTime.fromMillisecondsSinceEpoch(0);
 
   /// Returns the DateTime value for the specified [key], or [orElse] if not found or not parseable.
   /// Attempts multiple date formats including ISO 8601 and common JSON date formats.
@@ -153,7 +154,8 @@ extension JsonExtensions on Json {
   }
 
   /// Returns the DateTime value from a Google protobuf Timestamp format for the specified [key], or [orElse] if not found or invalid.
-  DateTime getTimestamp(String key, {required DateTime orElse}) => getTimestampOrNull(key, orElse: orElse) as DateTime;
+  DateTime getTimestamp(String key, {DateTime? orElse}) =>
+      getTimestampOrNull(key, orElse: orElse) ?? DateTime.fromMillisecondsSinceEpoch(0);
 
   /// Returns the DateTime value from a Google protobuf Timestamp format for the specified [key], or [orElse] if not found or invalid.
   /// Expects a Json object with 'seconds' and 'nanos' fields.
@@ -173,7 +175,7 @@ extension JsonExtensions on Json {
   }
 
   /// Returns a typed list for the specified [key], or [orElse] if not found or not a list.
-  List<T> getList<T>(String key, {required List<T> orElse}) => getListOrNull(key, orElse: orElse) as List<T>;
+  List<T> getList<T>(String key, {List<T>? orElse}) => getListOrNull(key, orElse: orElse) ?? <T>[];
 
   /// Returns a typed list for the specified [key], or [orElse] if not found or not a list.
   /// Filters elements to only include those matching type [T].
@@ -186,21 +188,21 @@ extension JsonExtensions on Json {
   }
 
   /// Returns a Json object for the specified [key], or [orElse] if not found or not a map.
-  Json getJson(String key, {required Json orElse}) {
+  Json getJson(String key, {Json? orElse}) {
     if (containsKey(key) && this[key] is Map) {
       return Map<String, dynamic>.from(this[key]);
     }
 
-    return orElse;
+    return orElse ?? {};
   }
 
   /// Returns a typed map for the specified [key], or [orElse] if not found or not a map.
-  Map<T, V> getMap<T, V>(String key, {required Map<T, V> orElse}) {
+  Map<T, V> getMap<T, V>(String key, {Map<T, V>? orElse}) {
     if (containsKey(key) && this[key] is Map) {
       return this[key];
     }
 
-    return orElse;
+    return orElse ?? <T, V>{};
   }
 
   /// Returns a flattened version of the Json structure with any sub-keys separated with a dot (.) from their parent keys.
