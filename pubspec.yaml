@@ -1,6 +1,6 @@
 name: superjson
 description: A Dart library providing convenient utilities for safely extracting typed data from JSON structures.
-version: 1.0.3
+version: 1.0.4
 repository: https://github.com/paschalisp/superjson-dart
 homepage: https://github.com/paschalisp/superjson-dart
 topics:
