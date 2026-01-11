@@ -829,6 +829,344 @@ void main() {
     });
   });
 
+  group('getJsonOrNull tests', () {
+    test('returns nested JSON when key exists', () {
+      final json = {
+        'config': {'timeout': 30, 'retries': 3},
+      };
+      final result = json.getJsonOrNull('config');
+      expect(result, isNotNull);
+      expect(result!['timeout'], 30);
+    });
+
+    test('returns null when key does not exist', () {
+      final json = <String, dynamic>{};
+      expect(json.getJsonOrNull('missing'), null);
+    });
+
+    test('returns custom default when key does not exist', () {
+      final json = <String, dynamic>{};
+      final defaultJson = {'fallback': 'value'};
+      expect(json.getJsonOrNull('missing', orElse: defaultJson), defaultJson);
+    });
+
+    test('returns null for non-map value', () {
+      final json = {'notMap': 'string'};
+      expect(json.getJsonOrNull('notMap'), null);
+    });
+
+    test('handles null values', () {
+      final json = {'key': null};
+      expect(json.getJsonOrNull('key'), null);
+    });
+
+    test('returns empty JSON object', () {
+      final json = {'empty': <String, dynamic>{}};
+      final result = json.getJsonOrNull('empty');
+      expect(result, isNotNull);
+      expect(result!, {});
+    });
+  });
+
+  group('getValue tests', () {
+    test('returns string value with correct type', () {
+      final json = {'name': 'Alice'};
+      expect(json.getValue<String>('name', orElse: ''), 'Alice');
+    });
+
+    test('returns int value with correct type', () {
+      final json = {'count': 42};
+      expect(json.getValue<int>('count', orElse: 0), 42);
+    });
+
+    test('returns double value with correct type', () {
+      final json = {'price': 99.99};
+      expect(json.getValue<double>('price', orElse: 0.0), 99.99);
+    });
+
+    test('returns bool value with correct type', () {
+      final json = {'active': true};
+      expect(json.getValue<bool>('active', orElse: false), true);
+    });
+
+    test('returns list value with correct type', () {
+      final json = {
+        'items': ['a', 'b', 'c'],
+      };
+      expect(json.getValue<List>('items', orElse: []), ['a', 'b', 'c']);
+    });
+
+    test('returns map value with correct type', () {
+      final json = {
+        'data': {'key': 'value'},
+      };
+      final result = json.getValue<Map>('data', orElse: {});
+      expect(result['key'], 'value');
+    });
+
+    test('returns default when key does not exist', () {
+      final json = <String, dynamic>{};
+      expect(json.getValue<String>('missing', orElse: 'default'), 'default');
+    });
+
+    test('returns default for null value', () {
+      final json = {'key': null};
+      expect(json.getValue<int>('key', orElse: -1), -1);
+    });
+
+    test('returns default for type mismatch', () {
+      final json = {'value': 'string'};
+      expect(json.getValue<int>('value', orElse: 0), 0);
+    });
+
+    test('accesses nested field via dot notation', () {
+      final json = {
+        'user': {
+          'profile': {'name': 'Bob'},
+        },
+      };
+      expect(json.getValue<String>('user.profile.name', orElse: ''), 'Bob');
+    });
+
+    test('returns default for missing nested field', () {
+      final json = {
+        'user': {'name': 'Charlie'},
+      };
+      expect(json.getValue<String>('user.profile.name', orElse: 'default'), 'default');
+    });
+
+    test('handles nested fields with null intermediate values', () {
+      final json = {'user': null};
+      expect(json.getValue<String>('user.name', orElse: 'default'), 'default');
+    });
+
+    test('handles deeply nested fields via dot notation', () {
+      final json = {
+        'a': {
+          'b': {
+            'c': {
+              'd': {'e': 'deep'},
+            },
+          },
+        },
+      };
+      expect(json.getValue<String>('a.b.c.d.e', orElse: ''), 'deep');
+    });
+
+    test('handles nested numeric values', () {
+      final json = {
+        'stats': {'score': 100},
+      };
+      expect(json.getValue<int>('stats.score', orElse: 0), 100);
+    });
+
+    test('handles nested boolean values', () {
+      final json = {
+        'settings': {'enabled': false},
+      };
+      expect(json.getValue<bool>('settings.enabled', orElse: true), false);
+    });
+
+    test('handles nested list values', () {
+      final json = {
+        'data': {
+          'items': [1, 2, 3],
+        },
+      };
+      expect(json.getValue<List>('data.items', orElse: []), [1, 2, 3]);
+    });
+
+    test('handles empty string as field name', () {
+      final json = {'': 'empty key'};
+      expect(json.getValue<String>('', orElse: 'default'), 'empty key');
+    });
+
+    test('handles special characters in field names', () {
+      final json = {'user-name': 'Dave'};
+      expect(json.getValue<String>('user-name', orElse: ''), 'Dave');
+    });
+
+    test('returns DateTime value with correct type', () {
+      final date = DateTime(2024, 1, 15);
+      final json = {'created': date};
+      expect(json.getValue<DateTime>('created', orElse: DateTime(2000)), date);
+    });
+
+    test('returns Duration value with correct type', () {
+      final duration = Duration(seconds: 30);
+      final json = {'timeout': duration};
+      expect(json.getValue<Duration>('timeout', orElse: Duration.zero), duration);
+    });
+  });
+
+  group('getValueOrNull tests', () {
+    test('returns string value when key exists', () {
+      final json = {'title': 'Test'};
+      expect(json.getValueOrNull<String>('title'), 'Test');
+    });
+
+    test('returns int value when key exists', () {
+      final json = {'quantity': 5};
+      expect(json.getValueOrNull<int>('quantity'), 5);
+    });
+
+    test('returns double value when key exists', () {
+      final json = {'amount': 123.45};
+      expect(json.getValueOrNull<double>('amount'), 123.45);
+    });
+
+    test('returns bool value when key exists', () {
+      final json = {'verified': false};
+      expect(json.getValueOrNull<bool>('verified'), false);
+    });
+
+    test('returns list value when key exists', () {
+      final json = {
+        'tags': ['tag1', 'tag2'],
+      };
+      expect(json.getValueOrNull<List>('tags'), ['tag1', 'tag2']);
+      expect(json.getValueOrNull<List<String>>('tags'), ['tag1', 'tag2']);
+    });
+
+    test('returns map value when key exists', () {
+      final json = {
+        'metadata': {'version': '1.0'},
+      };
+      final result = json.getValueOrNull<Map>('metadata');
+      expect(result, isNotNull);
+      expect(result!['version'], '1.0');
+    });
+
+    test('returns null when key does not exist', () {
+      final json = <String, dynamic>{};
+      expect(json.getValueOrNull<String>('missing'), null);
+    });
+
+    test('returns custom default when key does not exist', () {
+      final json = <String, dynamic>{};
+      expect(json.getValueOrNull<String>('missing', orElse: 'custom'), 'custom');
+    });
+
+    test('returns null for null value', () {
+      final json = {'key': null};
+      expect(json.getValueOrNull<String>('key'), null);
+    });
+
+    test('returns null for type mismatch', () {
+      final json = {'value': 'text'};
+      expect(json.getValueOrNull<int>('value'), null);
+    });
+
+    test('accesses nested field via dot notation', () {
+      final json = {
+        'account': {
+          'contact': {'email': 'test@example.com'},
+        },
+      };
+      expect(json.getValueOrNull<String>('account.contact.email'), 'test@example.com');
+    });
+
+    test('returns null for missing nested field', () {
+      final json = {
+        'account': {'name': 'John'},
+      };
+      expect(json.getValueOrNull<String>('account.contact.email'), null);
+    });
+
+    test('returns custom default for missing nested field', () {
+      final json = {
+        'account': {'name': 'Jane'},
+      };
+      expect(json.getValueOrNull<String>('account.contact.email', orElse: 'none'), 'none');
+    });
+
+    test('handles nested fields with null intermediate values', () {
+      final json = {'account': null};
+      expect(json.getValueOrNull<String>('account.name'), null);
+    });
+
+    test('handles deeply nested fields via dot notation', () {
+      final json = {
+        'level1': {
+          'level2': {
+            'level3': {'value': 42},
+          },
+        },
+      };
+      expect(json.getValueOrNull<int>('level1.level2.level3.value'), 42);
+    });
+
+    test('returns null for deeply nested missing field', () {
+      final json = {
+        'level1': {'level2': {}},
+      };
+      expect(json.getValueOrNull<String>('level1.level2.level3.value'), null);
+    });
+
+    test('handles nested list access', () {
+      final json = {
+        'response': {
+          'data': ['item1', 'item2'],
+        },
+      };
+      expect(json.getValueOrNull<List>('response.data'), ['item1', 'item2']);
+    });
+
+    test('handles nested boolean access', () {
+      final json = {
+        'config': {
+          'debug': {'enabled': true},
+        },
+      };
+      expect(json.getValueOrNull<bool>('config.debug.enabled'), true);
+    });
+
+    test('handles nested numeric access', () {
+      final json = {
+        'metrics': {
+          'performance': {'score': 95.5},
+        },
+      };
+      expect(json.getValueOrNull<double>('metrics.performance.score'), 95.5);
+    });
+
+    test('returns null when nested field has type mismatch', () {
+      final json = {
+        'data': {'value': 'string'},
+      };
+      expect(json.getValueOrNull<int>('data.value'), null);
+    });
+
+    test('handles empty nested maps', () {
+      final json = {'empty': <String, dynamic>{}};
+      expect(json.getValueOrNull<String>('empty.field'), null);
+    });
+
+    test('handles single dot in field name', () {
+      final json = {
+        'user': {'name': 'Alice'},
+      };
+      expect(json.getValueOrNull<String>('user.name'), 'Alice');
+    });
+
+    test('returns DateTime value when key exists', () {
+      final date = DateTime(2024, 6, 1);
+      final json = {'timestamp': date};
+      expect(json.getValueOrNull<DateTime>('timestamp'), date);
+    });
+
+    test('returns Duration value when key exists', () {
+      final duration = Duration(minutes: 5);
+      final json = {'interval': duration};
+      expect(json.getValueOrNull<Duration>('interval'), duration);
+    });
+
+    test('returns null for DateTime type mismatch', () {
+      final json = {'date': 'not a date'};
+      expect(json.getValueOrNull<DateTime>('date'), null);
+    });
+  });
+
   group('Flatten/unflatten tests', () {
     final json = {
       'a': 'a',

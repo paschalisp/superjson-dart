@@ -157,13 +157,13 @@ void main() {
 
   User user = User(name: 'Alice', age: 28, email: 'alice@example.com', isActive: true);
 
-  Json userJson = user.asJson;
+  Json userJson = user.toJson();
   print('User as JSON: $userJson');
   // {name: Alice, age: 28, email: alice@example.com, isActive: true}
 }
 
 // Example class using Jsonizable mixin
-class User with Jsonizable {
+class User with Jsonable {
   final String name;
   final int age;
   final String email;
@@ -172,5 +172,5 @@ class User with Jsonizable {
   User({required this.name, required this.age, required this.email, required this.isActive});
 
   @override
-  Json get asJson => {'name': name, 'age': age, 'email': email, 'isActive': isActive};
+  Json toJson() => {'name': name, 'age': age, 'email': email, 'isActive': isActive};
 }

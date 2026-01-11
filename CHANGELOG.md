@@ -1,15 +1,9 @@
+## 1.0.4
+ * Added generic `getValue<T>()` and `getValueOrNull<T>()` methods.
+ * All get methods now accept fetching nested fields via dot notation (e.g. `json.getString("account.contact.name")`).
+
 ## 1.0.3
- * All non-nullable getXXX() methods now return a default value (see the list) instead of requiring the `orElse` argument.
-   * getString() -> ''
-   * getInt() -> 0
-   * getDouble() -> 0.0
-   * getBool() -> false
-   * getDateTime() -> DateTime.fromMillisecondsSinceEpoch(0)
-   * getTimestamp() -> DateTime.fromMillisecondsSinceEpoch(0)
-   * getDuration() -> Duration()
-   * getList<T>() -> []
-   * getJson() -> {}
-   * getMap<T, V>() -> {}
+ * All non-nullable get methods now return a default value, depending on their type, instead of requiring the `orElse` argument.
 
 ## 1.0.2
  * Updated the `intl` dependency to the latest version (0.20.2).
