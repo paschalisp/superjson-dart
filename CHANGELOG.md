@@ -1,3 +1,6 @@
+## 1.0.5
+* Added generic filtering method `filter()`.
+
 ## 1.0.4
  * Added generic `getValue<T>()` and `getValueOrNull<T>()` methods.
  * All get methods now accept fetching nested fields via dot notation (e.g. `json.getString("account.contact.name")`).

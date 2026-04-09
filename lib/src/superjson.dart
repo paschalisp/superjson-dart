@@ -307,6 +307,20 @@ extension JsonExtensions on Json {
       return orElse;
     }
   }
+
+  /// Filters the provided [json] returning a subset with keys that match custom criteria.
+  Json filter(bool Function(String key, dynamic value) fn) {
+    Json ret = {};
+
+    for (var key in keys) {
+      if (!fn(key, this[key])) continue;
+
+      ret[key] = this[key];
+    }
+
+    return ret;
+  }
+
   // endregion
 
   // region Flattening getters

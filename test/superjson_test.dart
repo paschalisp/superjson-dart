@@ -1167,6 +1167,81 @@ void main() {
     });
   });
 
+  group('filter tests', () {
+    test('filters entries by key name', () {
+      final json = {'name': 'John', 'age': 30, 'email': 'john@example.com'};
+      final result = json.filter((key, value) => key.startsWith('n'));
+      expect(result, {'name': 'John'});
+    });
+
+    test('filters entries by value type', () {
+      final json = {'name': 'Alice', 'age': 25, 'active': true, 'score': 95.5};
+      final result = json.filter((key, value) => value is int);
+      expect(result, {'age': 25});
+    });
+
+    test('filters entries by value content', () {
+      final json = {'count': 10, 'total': 100, 'limit': 5, 'offset': 0};
+      final result = json.filter((key, value) => value > 5);
+      expect(result, {'count': 10, 'total': 100});
+    });
+
+    test('returns empty map when no entries match', () {
+      final json = {'a': 1, 'b': 2, 'c': 3};
+      final result = json.filter((key, value) => value > 10);
+      expect(result, {});
+    });
+
+    test('returns all entries when all match', () {
+      final json = {'x': 1, 'y': 2, 'z': 3};
+      final result = json.filter((key, value) => value is int);
+      expect(result, json);
+    });
+
+    test('filters with null values', () {
+      final json = {'a': 'value', 'b': null, 'c': 'another'};
+      final result = json.filter((key, value) => value != null);
+      expect(result, {'a': 'value', 'c': 'another'});
+    });
+
+    test('filters with mixed types', () {
+      final json = {
+        'str': 'text',
+        'num': 42,
+        'bool': true,
+        'list': [1, 2, 3],
+        'map': {'key': 'val'},
+      };
+      final result = json.filter((key, value) => value is String || value is bool);
+      expect(result, {'str': 'text', 'bool': true});
+    });
+
+    test('filters with nested maps', () {
+      final json = {
+        'user': {'name': 'Bob'},
+        'settings': {'theme': 'dark'},
+        'count': 5,
+      };
+      final result = json.filter((key, value) => value is Map);
+      expect(result, {
+        'user': {'name': 'Bob'},
+        'settings': {'theme': 'dark'},
+      });
+    });
+
+    test('filters empty map', () {
+      final json = <String, dynamic>{};
+      final result = json.filter((key, value) => true);
+      expect(result, {});
+    });
+
+    test('filters with complex predicate combining key and value', () {
+      final json = {'name': 'Charlie', 'age': 30, 'email': 'charlie@example.com', 'active': true};
+      final result = json.filter((key, value) => key.length > 4 && value is String);
+      expect(result, {'email': 'charlie@example.com'});
+    });
+  });
+
   group('Flatten/unflatten tests', () {
     final json = {
       'a': 'a',
