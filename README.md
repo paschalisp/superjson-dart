@@ -16,7 +16,7 @@ Add `superjson` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  superjson: ^1.0.3
+  superjson: ^1.0.6
 ```
 
 Then import it in your Dart code:
@@ -33,7 +33,7 @@ import 'package:superjson/superjson.dart';
 final data = {
   'name': 'John Doe',
   'age': '25',  // String that can be parsed as int
-  'metrics'{
+  'metrics': {
     'score': 95.7
   },
   'settings': {
@@ -79,8 +79,13 @@ final data = {
   'updated': 'Mon, 15 Jan 2024 10:30:00 GMT',
 };
 
-DateTime created = data.getDateTime('created', DateTime.now());
+DateTime created = data.getDateTime('created', orElse: DateTime.now());
 DateTime? updated = data.getDateTimeOrNull('updated');
+
+// Treat parsed date as UTC and optionally convert to local
+// isUTC: true - treats the components as UTC
+// convertToLocal: false - keeps it as UTC (otherwise converts to local)
+DateTime utc = data.getDateTime('created', isUTC: true, convertToLocal: false);
 ```
 
 ### Collections
@@ -131,6 +136,20 @@ class User with Jsonable {
 
 User user = User('Alice', 30);
 Json json = user.toJson();  // {'name': 'Alice', 'age': 30}
+```
+
+### Filtering JSON
+
+```dart
+final data = {
+  'name': 'John',
+  'age': 25,
+  'city': 'New York',
+};
+
+// Filter based on key or value
+final filtered = data.filter((key, value) => key != 'age');
+// {'name': 'John', 'city': 'New York'}
 ```
 
 For more detailed examples, see the `/example` folder.
@@ -188,6 +207,7 @@ All methods support nested field access via dot notation, e.g. `myjson.getString
   - Converts from:
     - `String` (ISO 8601, RFC 2822, RFC 1123 and custom formats)
     - `Map` (Google's protobuf Timestamp format: `{seconds: x, nanos: y}`)
+  - Supports `isUTC` (treats parsed date as UTC) and `convertToLocal` (converts back to local if `isUTC` is true) arguments
 
 - **List<T>**
   - Methods: `getList<T>()`, `getListOrNull<T>()`
@@ -221,6 +241,12 @@ The package provides useful methods to flatten nested JSON structures into dot-n
   - Extracts a subset of keys matching a specific prefix
   - Returns a new `Json` object with the prefix removed from keys
   - Useful for isolating specific sections of a flattened structure
+
+### Filtering JSON
+
+- **filter(predicate)** method
+  - Filters the JSON object returning a subset with keys that match custom criteria
+  - Example: `json.filter((key, value) => key.startsWith('user_'))`
 
 ### Jsonable mixin
 

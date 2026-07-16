@@ -1,3 +1,6 @@
+## 1.0.6
+* Added `isUTC` (defaults to false), and `convertToLocal` arguments to `getDateTime()` and `getDateTimeOrNull()` methods to fine-tune datetime parsing.
+
 ## 1.0.5
 * Added generic filtering method `filter()`.
 

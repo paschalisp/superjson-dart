@@ -349,6 +349,29 @@ void main() {
       final json = {'date': date};
       expect(json.getDateTime('date', orElse: defaultDate), date);
     });
+
+    test('treats components as UTC when isUTC is true', () {
+      final json = {'created': '2024-01-15T01:30:00'};
+      final result = json.getDateTime('created', isUTC: true, convertToLocal: false);
+      expect(result.isUtc, true);
+      expect(result.year, 2024);
+      expect(result.day, 15);
+      expect(result.hour, 1);
+    });
+
+    test('converts to local when isUTC is true and convertToLocal is true', () {
+      final json = {'created': '2024-01-15T01:30:00'};
+      final result = json.getDateTime('created', isUTC: true, convertToLocal: true);
+      expect(result.isUtc, false);
+      expect(result, DateTime.utc(2024, 1, 15, 1, 30).toLocal());
+    });
+
+    test('isUTC: true with string already having timezone (Z)', () {
+      final json = {'created': '2024-01-15T01:30:00Z'};
+      final result = json.getDateTime('created', isUTC: true, convertToLocal: false);
+      expect(result.isUtc, true);
+      expect(result.hour, 1);
+    });
   });
 
   group('getDateTimeOrNull tests', () {
@@ -379,6 +402,22 @@ void main() {
     test('handles null values', () {
       final json = {'key': null};
       expect(json.getDateTimeOrNull('key'), null);
+    });
+
+    test('treats components as UTC when isUTC is true', () {
+      final json = {'timestamp': '2024-03-20T14:45:00'};
+      final result = json.getDateTimeOrNull('timestamp', isUTC: true, convertToLocal: false);
+      expect(result, isNotNull);
+      expect(result!.isUtc, true);
+      expect(result.hour, 14);
+    });
+
+    test('converts to local when isUTC is true and convertToLocal is true', () {
+      final json = {'timestamp': '2024-03-20T14:45:00'};
+      final result = json.getDateTimeOrNull('timestamp', isUTC: true, convertToLocal: true);
+      expect(result, isNotNull);
+      expect(result!.isUtc, false);
+      expect(result, DateTime.utc(2024, 3, 20, 14, 45).toLocal());
     });
   });
 
@@ -1239,6 +1278,13 @@ void main() {
       final json = {'name': 'Charlie', 'age': 30, 'email': 'charlie@example.com', 'active': true};
       final result = json.filter((key, value) => key.length > 4 && value is String);
       expect(result, {'email': 'charlie@example.com'});
+    });
+
+    test('filters with custom object values', () {
+      final obj = Object();
+      final json = {'key': obj, 'other': 123};
+      final result = json.filter((key, value) => value is Object && value is! int);
+      expect(result, {'key': obj});
     });
   });
 

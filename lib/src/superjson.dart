@@ -137,12 +137,28 @@ extension JsonExtensions on Json {
   }
 
   /// Returns the DateTime value for the specified [key], or [orElse] if not found or not parseable.
-  DateTime getDateTime(String key, {DateTime? orElse}) =>
-      getDateTimeOrNull(key, orElse: orElse) ?? DateTime.fromMillisecondsSinceEpoch(0);
+  DateTime getDateTime(String key, {DateTime? orElse, bool isUTC = false, bool convertToLocal = true}) =>
+      getDateTimeOrNull(key, orElse: orElse, isUTC: isUTC, convertToLocal: convertToLocal) ??
+      DateTime.fromMillisecondsSinceEpoch(0);
 
   /// Returns the DateTime value for the specified [key], or [orElse] if not found or not parseable.
   /// Attempts multiple date formats including ISO 8601 and common JSON date formats.
-  DateTime? getDateTimeOrNull(String key, {DateTime? orElse}) {
+  DateTime? getDateTimeOrNull(String key, {DateTime? orElse, bool isUTC = false, bool convertToLocal = true}) {
+    DateTime toUtc(DateTime date) {
+      final converted = DateTime.utc(
+        date.year,
+        date.month,
+        date.day,
+        date.hour,
+        date.minute,
+        date.second,
+        date.millisecond,
+        date.microsecond,
+      );
+
+      return convertToLocal ? converted.toLocal() : converted;
+    }
+
     final (json, property) = _deepestJson(key);
 
     if (json.containsKey(property)) {
@@ -150,22 +166,22 @@ extension JsonExtensions on Json {
       if (json[property] is String) {
         // 1st try: Parse directly
         var date = DateTime.tryParse(json[property]);
-        if (date is DateTime) return date;
+        if (date is DateTime) return isUTC ? toUtc(date) : date;
 
         // 2nd try: Parse by common JSON date format
         var dateFormat = DateFormat(r'''EEE, d MMM yyyy hh:mm:ss Z''');
         date = dateFormat.tryParse(json[property]);
-        if (date is DateTime) return date;
+        if (date is DateTime) return isUTC ? toUtc(date) : date;
 
         // 3nd try: Parse by common JSON date format without timezone
         dateFormat = DateFormat(r'''EEE, d MMM yyyy hh:mm:ss''');
         date = dateFormat.tryParse(json[property]);
-        if (date is DateTime) return date;
+        if (date is DateTime) return isUTC ? toUtc(date) : date;
 
         // 4th try: Parse by common JSON date format with milliseconds without timezone
         dateFormat = DateFormat(r'''EEE, d MMM yyyy hh:mm:ss.SSS''');
         date = dateFormat.tryParse(json[property]);
-        if (date is DateTime) return date;
+        if (date is DateTime) return isUTC ? toUtc(date) : date;
       }
     }
 
